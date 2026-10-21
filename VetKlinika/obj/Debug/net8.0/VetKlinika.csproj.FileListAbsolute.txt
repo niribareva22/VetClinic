@@ -102,3 +102,4 @@
 /Users/druncho/RiderProjects/VetKlinika/VetKlinika/obj/Debug/net8.0/VetKlinika.pdb
 /Users/druncho/RiderProjects/VetKlinika/VetKlinika/obj/Debug/net8.0/VetKlinika.genruntimeconfig.cache
 /Users/druncho/RiderProjects/VetKlinika/VetKlinika/obj/Debug/net8.0/ref/VetKlinika.dll
+/Users/druncho/RiderProjects/VetKlinika/VetKlinika/obj/Debug/net8.0/VetKlinika.sourcelink.json
