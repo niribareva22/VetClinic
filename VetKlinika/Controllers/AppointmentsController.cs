@@ -47,6 +47,14 @@ namespace VetKlinika.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("AppointmentID,PatientID,VetID,ServiceID,AppointmentDateTime,Status")] Appointment appointment)
         {
+            // Convert to UTC to satisfy PostgreSQL timestamp with time zone requirement
+            appointment.AppointmentDateTime = DateTime.SpecifyKind(appointment.AppointmentDateTime, DateTimeKind.Utc);
+
+            if (appointment.AppointmentDateTime < DateTime.UtcNow)
+            {
+                ModelState.AddModelError("AppointmentDateTime", "You cannot schedule an appointment in the past.");
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(appointment);
@@ -76,6 +84,14 @@ namespace VetKlinika.Controllers
         public async Task<IActionResult> Edit(int id, [Bind("AppointmentID,PatientID,VetID,ServiceID,AppointmentDateTime,Status")] Appointment appointment)
         {
             if (id != appointment.AppointmentID) return NotFound();
+
+            // Convert to UTC to satisfy PostgreSQL timestamp with time zone requirement
+            appointment.AppointmentDateTime = DateTime.SpecifyKind(appointment.AppointmentDateTime, DateTimeKind.Utc);
+
+            if (appointment.AppointmentDateTime < DateTime.UtcNow)
+            {
+                ModelState.AddModelError("AppointmentDateTime", "You cannot schedule an appointment in the past.");
+            }
 
             if (ModelState.IsValid)
             {

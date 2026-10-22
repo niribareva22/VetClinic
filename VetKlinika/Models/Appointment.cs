@@ -8,19 +8,25 @@ namespace VetKlinika.Models
         [Key]
         public int AppointmentID { get; set; }
 
-        [ForeignKey("Patient")]
+        [Required]
         public int PatientID { get; set; }
-        public Patient Patient { get; set; } = null!;
+        [ForeignKey("PatientID")]
+        public virtual Patient? Patient { get; set; }
 
-        [ForeignKey("Vet")]
+        [Required]
         public int VetID { get; set; }
-        public Vet Vet { get; set; } = null!;
+        [ForeignKey("VetID")]
+        public virtual Vet? Vet { get; set; }
 
-        [ForeignKey("Service")]
+        [Required]
         public int ServiceID { get; set; }
-        public Service Service { get; set; } = null!;
+        [ForeignKey("ServiceID")]
+        public virtual Service? Service { get; set; }
 
+        [Required]
         public DateTime AppointmentDateTime { get; set; }
+
+        [Required]
         public string Status { get; set; } = string.Empty;
     }
 }

@@ -1,0 +1,33 @@
+@model IEnumerable<VetKlinika.Models.Service>
+
+@{
+    ViewData["Title"] = "Services";
+}
+
+<h1>Services</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Create New Service</a>
+</p>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>@Html.DisplayNameFor(model => model.ServiceName)</th>
+        <th>@Html.DisplayNameFor(model => model.Price)</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model) {
+        <tr>
+            <td>@Html.DisplayFor(modelItem => item.ServiceName)</td>
+            <td>@Html.DisplayFor(modelItem => item.Price)</td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.ServiceID" class="btn btn-sm btn-warning">Edit</a>
+                <a asp-action="Details" asp-route-id="@item.ServiceID" class="btn btn-sm btn-info">Details</a>
+                <a asp-action="Delete" asp-route-id="@item.ServiceID" class="btn btn-sm btn-danger">Delete</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

@@ -7,13 +7,19 @@ namespace VetKlinika.Models
     {
         [Key]
         public int PatientID { get; set; }
+
+        [Required]
         public string Name { get; set; } = string.Empty;
+
+        [Required]
         public string Species { get; set; } = string.Empty;
+
         public int Age { get; set; }
 
-        [ForeignKey("Client")]
+        [Required]
         public int ClientID { get; set; }
-        public Client Client { get; set; } = null!;
-        public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+
+        [ForeignKey("ClientID")]
+        public virtual Client? Client { get; set; }
     }
 }
