@@ -1,0 +1,15 @@
+@model VetKlinika.Models.Appointment
+@{
+    ViewData["Title"] = "Appointment details";
+}
+<h1>Appointment details</h1>
+<dl class="row">
+    <dt class="col-sm-3">@Html.DisplayNameFor(m => m.AppointmentDateTime)</dt><dd class="col-sm-9">@Model.AppointmentDateTime</dd>
+    <dt class="col-sm-3">Client</dt><dd class="col-sm-9">@Model.Client?.FirstName @Model.Client?.LastName</dd>
+    <dt class="col-sm-3">Patient</dt><dd class="col-sm-9">@Model.Patient?.Name</dd>
+    <dt class="col-sm-3">Vet</dt><dd class="col-sm-9">@Model.Vet?.FirstName @Model.Vet?.LastName</dd>
+    <dt class="col-sm-3">Service</dt><dd class="col-sm-9">@Model.Service?.ServiceName</dd>
+    <dt class="col-sm-3">@Html.DisplayNameFor(m => m.Status)</dt><dd class="col-sm-9">@Model.Status</dd>
+</dl>
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+<a asp-action="Index" class="btn btn-secondary">Back to list</a>

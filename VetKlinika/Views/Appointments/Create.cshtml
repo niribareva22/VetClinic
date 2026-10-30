@@ -13,27 +13,27 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             
             <div class="form-group mb-3">
-                <label asp-for="PatientID" class="control-label">Patient</label>
-                <select asp-for="PatientID" class="form-select" asp-items="ViewBag.PatientID">
+                <label asp-for="PatientId" class="control-label">Patient</label>
+                <select asp-for="PatientId" class="form-select" asp-items="ViewBag.PatientId">
                     <option value="">-- Select Patient --</option>
                 </select>
-                <span asp-validation-for="PatientID" class="text-danger"></span>
+                <span asp-validation-for="PatientId" class="text-danger"></span>
             </div>
 
             <div class="form-group mb-3">
-                <label asp-for="VetID" class="control-label">Vet</label>
-                <select asp-for="VetID" class="form-select" asp-items="ViewBag.VetID">
+                <label asp-for="VetId" class="control-label">Vet</label>
+                <select asp-for="VetId" class="form-select" asp-items="ViewBag.VetId">
                     <option value="">-- Select Vet --</option>
                 </select>
-                <span asp-validation-for="VetID" class="text-danger"></span>
+                <span asp-validation-for="VetId" class="text-danger"></span>
             </div>
 
             <div class="form-group mb-3">
-                <label asp-for="ServiceID" class="control-label">Service</label>
-                <select asp-for="ServiceID" class="form-select" asp-items="ViewBag.ServiceID">
+                <label asp-for="ServiceId" class="control-label">Service</label>
+                <select asp-for="ServiceId" class="form-select" asp-items="ViewBag.ServiceId">
                     <option value="">-- Select Service --</option>
                 </select>
-                <span asp-validation-for="ServiceID" class="text-danger"></span>
+                <span asp-validation-for="ServiceId" class="text-danger"></span>
             </div>
 
             <div class="form-group mb-3">

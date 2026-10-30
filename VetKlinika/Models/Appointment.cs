@@ -1,32 +1,34 @@
+using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace VetKlinika.Models
 {
     public class Appointment
     {
-        [Key]
-        public int AppointmentID { get; set; }
+        public int Id { get; set; }
 
         [Required]
-        public int PatientID { get; set; }
-        [ForeignKey("PatientID")]
-        public virtual Patient? Patient { get; set; }
-
-        [Required]
-        public int VetID { get; set; }
-        [ForeignKey("VetID")]
-        public virtual Vet? Vet { get; set; }
-
-        [Required]
-        public int ServiceID { get; set; }
-        [ForeignKey("ServiceID")]
-        public virtual Service? Service { get; set; }
-
-        [Required]
+        [DataType(DataType.DateTime)]
         public DateTime AppointmentDateTime { get; set; }
 
         [Required]
-        public string Status { get; set; } = string.Empty;
+        [StringLength(50)]
+        public string Status { get; set; } = "Scheduled";
+
+        [Required]
+        public int ClientId { get; set; }
+        public virtual Client? Client { get; set; }
+
+        [Required]
+        public int PatientId { get; set; }
+        public virtual Patient? Patient { get; set; }
+
+        [Required]
+        public int VetId { get; set; }
+        public virtual Vet? Vet { get; set; }
+
+        [Required]
+        public int ServiceId { get; set; }
+        public virtual Service? Service { get; set; }
     }
 }

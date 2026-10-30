@@ -1,0 +1,16 @@
+@model VetKlinika.Models.Appointment
+@{
+    ViewData["Title"] = "Edit appointment";
+}
+<h1>Edit appointment</h1>
+<form asp-action="Edit">
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3"><label asp-for="PatientId" class="form-label">Patient</label><select asp-for="PatientId" asp-items="ViewBag.PatientId" class="form-select"><option value="">-- Select patient --</option></select><span asp-validation-for="PatientId" class="text-danger"></span></div>
+    <div class="mb-3"><label asp-for="VetId" class="form-label">Vet</label><select asp-for="VetId" asp-items="ViewBag.VetId" class="form-select"><option value="">-- Select vet --</option></select><span asp-validation-for="VetId" class="text-danger"></span></div>
+    <div class="mb-3"><label asp-for="ServiceId" class="form-label">Service</label><select asp-for="ServiceId" asp-items="ViewBag.ServiceId" class="form-select"><option value="">-- Select service --</option></select><span asp-validation-for="ServiceId" class="text-danger"></span></div>
+    <div class="mb-3"><label asp-for="AppointmentDateTime" class="form-label"></label><input asp-for="AppointmentDateTime" type="datetime-local" class="form-control" /><span asp-validation-for="AppointmentDateTime" class="text-danger"></span></div>
+    <div class="mb-3"><label asp-for="Status" class="form-label"></label><input asp-for="Status" class="form-control" /><span asp-validation-for="Status" class="text-danger"></span></div>
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

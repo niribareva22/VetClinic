@@ -103,3 +103,17 @@
 /Users/druncho/RiderProjects/VetKlinika/VetKlinika/obj/Debug/net8.0/VetKlinika.genruntimeconfig.cache
 /Users/druncho/RiderProjects/VetKlinika/VetKlinika/obj/Debug/net8.0/ref/VetKlinika.dll
 /Users/druncho/RiderProjects/VetKlinika/VetKlinika/obj/Debug/net8.0/VetKlinika.sourcelink.json
+/Users/druncho/RiderProjects/VetKlinika/VetKlinika/bin/Debug/net8.0/Microsoft.AspNetCore.Cryptography.Internal.dll
+/Users/druncho/RiderProjects/VetKlinika/VetKlinika/bin/Debug/net8.0/Microsoft.AspNetCore.Cryptography.KeyDerivation.dll
+/Users/druncho/RiderProjects/VetKlinika/VetKlinika/bin/Debug/net8.0/Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
+/Users/druncho/RiderProjects/VetKlinika/VetKlinika/bin/Debug/net8.0/Microsoft.AspNetCore.Identity.UI.dll
+/Users/druncho/RiderProjects/VetKlinika/VetKlinika/bin/Debug/net8.0/Microsoft.Extensions.Caching.Memory.dll
+/Users/druncho/RiderProjects/VetKlinika/VetKlinika/bin/Debug/net8.0/Microsoft.Extensions.DependencyInjection.dll
+/Users/druncho/RiderProjects/VetKlinika/VetKlinika/bin/Debug/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+/Users/druncho/RiderProjects/VetKlinika/VetKlinika/bin/Debug/net8.0/Microsoft.Extensions.FileProviders.Embedded.dll
+/Users/druncho/RiderProjects/VetKlinika/VetKlinika/bin/Debug/net8.0/Microsoft.Extensions.Identity.Core.dll
+/Users/druncho/RiderProjects/VetKlinika/VetKlinika/bin/Debug/net8.0/Microsoft.Extensions.Identity.Stores.dll
+/Users/druncho/RiderProjects/VetKlinika/VetKlinika/bin/Debug/net8.0/Microsoft.Extensions.Logging.dll
+/Users/druncho/RiderProjects/VetKlinika/VetKlinika/bin/Debug/net8.0/Microsoft.Extensions.Logging.Abstractions.dll
+/Users/druncho/RiderProjects/VetKlinika/VetKlinika/bin/Debug/net8.0/Microsoft.Extensions.Options.dll
+/Users/druncho/RiderProjects/VetKlinika/VetKlinika/obj/Debug/net8.0/VetKlinika.MvcApplicationPartsAssemblyInfo.cs

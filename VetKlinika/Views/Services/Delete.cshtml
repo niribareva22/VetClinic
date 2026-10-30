@@ -1,0 +1,12 @@
+@model VetKlinika.Models.Service
+@{
+    ViewData["Title"] = "Delete service";
+}
+<h1>Delete service</h1>
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<p>Delete @Model.ServiceName?</p>
+<form asp-action="Delete">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

@@ -6,14 +6,19 @@
 
 <h1>Services</h1>
 
+<form asp-action="Index" method="get" class="row g-2 mb-3">
+    <div class="col-md-4"><input name="searchString" value="@ViewData["SearchString"]" class="form-control" placeholder="Search services" /></div>
+    <div class="col-auto"><button type="submit" class="btn btn-outline-primary">Search</button></div>
+</form>
+
 <p>
     <a asp-action="Create" class="btn btn-primary">Create New Service</a>
 </p>
 <table class="table table-striped">
     <thead>
     <tr>
-        <th>@Html.DisplayNameFor(model => model.ServiceName)</th>
-        <th>@Html.DisplayNameFor(model => model.Price)</th>
+        <th><a asp-action="Index" asp-route-searchString="@ViewData["SearchString"]" asp-route-sortOrder="@ViewData["NameSort"]">Service</a></th>
+        <th><a asp-action="Index" asp-route-searchString="@ViewData["SearchString"]" asp-route-sortOrder="@ViewData["PriceSort"]">Price</a></th>
         <th>Actions</th>
     </tr>
     </thead>
@@ -23,9 +28,9 @@
             <td>@Html.DisplayFor(modelItem => item.ServiceName)</td>
             <td>@Html.DisplayFor(modelItem => item.Price)</td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.ServiceID" class="btn btn-sm btn-warning">Edit</a>
-                <a asp-action="Details" asp-route-id="@item.ServiceID" class="btn btn-sm btn-info">Details</a>
-                <a asp-action="Delete" asp-route-id="@item.ServiceID" class="btn btn-sm btn-danger">Delete</a>
+                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
+                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
+                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
             </td>
         </tr>
     }

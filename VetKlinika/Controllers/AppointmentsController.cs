@@ -1,144 +1,161 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using VetKlinika.Data;
 using VetKlinika.Models;
 
-namespace VetKlinika.Controllers
+[Authorize]
+public class AppointmentsController : Controller
 {
-    public class AppointmentsController : Controller
+    private readonly ApplicationDbContext _context;
+
+    public AppointmentsController(ApplicationDbContext context)
     {
-        private readonly ApplicationDbContext _context;
+        _context = context;
+    }
 
-        public AppointmentsController(ApplicationDbContext context)
+    public async Task<IActionResult> Index(string? sortOrder)
+    {
+        ViewData["SortOrder"] = sortOrder;
+        ViewData["NextDateSort"] = sortOrder == "date" ? "date_desc" : "date";
+        IQueryable<Appointment> appointments = _context.Appointments
+            .Include(a => a.Client)
+            .Include(a => a.Patient)
+            .Include(a => a.Service)
+            .Include(a => a.Vet);
+        appointments = sortOrder == "date_desc"
+            ? appointments.OrderByDescending(a => a.AppointmentDateTime)
+            : appointments.OrderBy(a => a.AppointmentDateTime);
+        return View(await appointments.ToListAsync());
+    }
+
+    public async Task<IActionResult> Details(int? id)
+    {
+        if (id == null) return NotFound();
+        var appointment = await _context.Appointments
+            .Include(a => a.Client)
+            .Include(a => a.Patient)
+            .Include(a => a.Service)
+            .Include(a => a.Vet)
+            .FirstOrDefaultAsync(a => a.Id == id);
+        return appointment == null ? NotFound() : View(appointment);
+    }
+
+    [Authorize(Roles = "Admin,Vet")]
+    public IActionResult Create()
+    {
+        PopulateSelections();
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin,Vet")]
+    public async Task<IActionResult> Create(Appointment appointment)
+    {
+        var patient = await _context.Patients.FindAsync(appointment.PatientId);
+        if (patient == null)
         {
-            _context = context;
+            ModelState.AddModelError(nameof(appointment.PatientId), "Select a valid patient.");
         }
-
-        public async Task<IActionResult> Index()
+        else
         {
-            var applicationDbContext = _context.Appointments.Include(a => a.Patient).Include(a => a.Service).Include(a => a.Vet);
-            return View(await applicationDbContext.ToListAsync());
+            appointment.ClientId = patient.ClientId;
         }
+        if (!await _context.Vets.AnyAsync(v => v.Id == appointment.VetId))
+            ModelState.AddModelError(nameof(appointment.VetId), "Select a valid vet.");
+        if (!await _context.Services.AnyAsync(s => s.Id == appointment.ServiceId))
+            ModelState.AddModelError(nameof(appointment.ServiceId), "Select a valid service.");
 
-        public async Task<IActionResult> Details(int? id)
+        if (ModelState.IsValid)
         {
-            if (id == null) return NotFound();
-
-            var appointment = await _context.Appointments
-                .Include(a => a.Patient)
-                .Include(a => a.Service)
-                .Include(a => a.Vet)
-                .FirstOrDefaultAsync(m => m.AppointmentID == id);
-            if (appointment == null) return NotFound();
-
-            return View(appointment);
-        }
-
-        public IActionResult Create()
-        {
-            ViewData["PatientID"] = new SelectList(_context.Patients, "PatientID", "Name");
-            ViewData["ServiceID"] = new SelectList(_context.Services, "ServiceID", "ServiceName");
-            ViewData["VetID"] = new SelectList(_context.Vets, "VetID", "FirstName");
-            return View();
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("AppointmentID,PatientID,VetID,ServiceID,AppointmentDateTime,Status")] Appointment appointment)
-        {
-            // Convert to UTC to satisfy PostgreSQL timestamp with time zone requirement
-            appointment.AppointmentDateTime = DateTime.SpecifyKind(appointment.AppointmentDateTime, DateTimeKind.Utc);
-
-            if (appointment.AppointmentDateTime < DateTime.UtcNow)
-            {
-                ModelState.AddModelError("AppointmentDateTime", "You cannot schedule an appointment in the past.");
-            }
-
-            if (ModelState.IsValid)
-            {
-                _context.Add(appointment);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["PatientID"] = new SelectList(_context.Patients, "PatientID", "Name", appointment.PatientID);
-            ViewData["ServiceID"] = new SelectList(_context.Services, "ServiceID", "ServiceName", appointment.ServiceID);
-            ViewData["VetID"] = new SelectList(_context.Vets, "VetID", "FirstName", appointment.VetID);
-            return View(appointment);
-        }
-
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null) return NotFound();
-
-            var appointment = await _context.Appointments.FindAsync(id);
-            if (appointment == null) return NotFound();
-            ViewData["PatientID"] = new SelectList(_context.Patients, "PatientID", "Name", appointment.PatientID);
-            ViewData["ServiceID"] = new SelectList(_context.Services, "ServiceID", "ServiceName", appointment.ServiceID);
-            ViewData["VetID"] = new SelectList(_context.Vets, "VetID", "FirstName", appointment.VetID);
-            return View(appointment);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("AppointmentID,PatientID,VetID,ServiceID,AppointmentDateTime,Status")] Appointment appointment)
-        {
-            if (id != appointment.AppointmentID) return NotFound();
-
-            // Convert to UTC to satisfy PostgreSQL timestamp with time zone requirement
-            appointment.AppointmentDateTime = DateTime.SpecifyKind(appointment.AppointmentDateTime, DateTimeKind.Utc);
-
-            if (appointment.AppointmentDateTime < DateTime.UtcNow)
-            {
-                ModelState.AddModelError("AppointmentDateTime", "You cannot schedule an appointment in the past.");
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(appointment);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!_context.Appointments.Any(e => e.AppointmentID == appointment.AppointmentID)) return NotFound();
-                    else throw;
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["PatientID"] = new SelectList(_context.Patients, "PatientID", "Name", appointment.PatientID);
-            ViewData["ServiceID"] = new SelectList(_context.Services, "ServiceID", "ServiceName", appointment.ServiceID);
-            ViewData["VetID"] = new SelectList(_context.Vets, "VetID", "FirstName", appointment.VetID);
-            return View(appointment);
-        }
-
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null) return NotFound();
-
-            var appointment = await _context.Appointments
-                .Include(a => a.Patient)
-                .Include(a => a.Service)
-                .Include(a => a.Vet)
-                .FirstOrDefaultAsync(m => m.AppointmentID == id);
-            if (appointment == null) return NotFound();
-
-            return View(appointment);
-        }
-
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var appointment = await _context.Appointments.FindAsync(id);
-            if (appointment != null)
-            {
-                _context.Appointments.Remove(appointment);
-            }
-
+            _context.Appointments.Add(appointment);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
+        PopulateSelections(appointment);
+        return View(appointment);
+    }
+
+    [Authorize(Roles = "Admin,Vet")]
+    public async Task<IActionResult> Edit(int? id)
+    {
+        if (id == null) return NotFound();
+        var appointment = await _context.Appointments.FindAsync(id);
+        if (appointment == null) return NotFound();
+        PopulateSelections(appointment);
+        return View(appointment);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin,Vet")]
+    public async Task<IActionResult> Edit(int id, Appointment appointment)
+    {
+        if (id != appointment.Id) return NotFound();
+        var existingAppointment = await _context.Appointments.FindAsync(id);
+        if (existingAppointment == null) return NotFound();
+
+        var patient = await _context.Patients.FindAsync(appointment.PatientId);
+        if (patient == null)
+            ModelState.AddModelError(nameof(appointment.PatientId), "Select a valid patient.");
+        if (!await _context.Vets.AnyAsync(v => v.Id == appointment.VetId))
+            ModelState.AddModelError(nameof(appointment.VetId), "Select a valid vet.");
+        if (!await _context.Services.AnyAsync(s => s.Id == appointment.ServiceId))
+            ModelState.AddModelError(nameof(appointment.ServiceId), "Select a valid service.");
+
+        if (ModelState.IsValid && patient != null)
+        {
+            existingAppointment.PatientId = patient.Id;
+            existingAppointment.ClientId = patient.ClientId;
+            existingAppointment.VetId = appointment.VetId;
+            existingAppointment.ServiceId = appointment.ServiceId;
+            existingAppointment.AppointmentDateTime = appointment.AppointmentDateTime;
+            existingAppointment.Status = appointment.Status;
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        PopulateSelections(appointment);
+        return View(appointment);
+    }
+
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Delete(int? id)
+    {
+        if (id == null) return NotFound();
+        var appointment = await _context.Appointments
+            .Include(a => a.Client)
+            .Include(a => a.Patient)
+            .Include(a => a.Service)
+            .Include(a => a.Vet)
+            .FirstOrDefaultAsync(a => a.Id == id);
+        return appointment == null ? NotFound() : View(appointment);
+    }
+
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+        var appointment = await _context.Appointments.FindAsync(id);
+        if (appointment == null) return NotFound();
+        _context.Appointments.Remove(appointment);
+        await _context.SaveChangesAsync();
+        return RedirectToAction(nameof(Index));
+    }
+
+    private void PopulateSelections(Appointment? appointment = null)
+    {
+        ViewData["PatientId"] = new SelectList(
+            _context.Patients.OrderBy(p => p.Name), "Id", "Name", appointment?.PatientId);
+        ViewData["VetId"] = new SelectList(
+            _context.Vets.OrderBy(v => v.LastName)
+                .Select(v => new { v.Id, Name = v.FirstName + " " + v.LastName }),
+            "Id", "Name", appointment?.VetId);
+        ViewData["ServiceId"] = new SelectList(
+            _context.Services.OrderBy(s => s.ServiceName), "Id", "ServiceName", appointment?.ServiceId);
     }
 }
