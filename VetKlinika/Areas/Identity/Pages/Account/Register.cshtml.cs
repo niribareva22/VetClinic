@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using VetKlinika.Data;
 
 namespace VetKlinika.Areas.Identity.Pages.Account
 {
@@ -29,13 +30,15 @@ namespace VetKlinika.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<IdentityUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly ApplicationDbContext _context;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
             IUserStore<IdentityUser> userStore,
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            ApplicationDbContext context)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -43,6 +46,7 @@ namespace VetKlinika.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _context = context;
         }
 
         /// <summary>
@@ -105,21 +109,10 @@ namespace VetKlinika.Areas.Identity.Pages.Account
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
-                var result = await _userManager.CreateAsync(user, Input.Password);
+                var result = await CreateClientUserAsync(user);
 
                 if (result.Succeeded)
                 {
-                    var roleResult = await _userManager.AddToRoleAsync(user, "Client");
-                    if (!roleResult.Succeeded)
-                    {
-                        foreach (var error in roleResult.Errors)
-                        {
-                            ModelState.AddModelError(string.Empty, error.Description);
-                        }
-
-                        return Page();
-                    }
-
                     _logger.LogInformation("User created a new account with password.");
 
                     var userId = await _userManager.GetUserIdAsync(user);
@@ -152,6 +145,21 @@ namespace VetKlinika.Areas.Identity.Pages.Account
 
             // If we got this far, something failed, redisplay form
             return Page();
+        }
+
+        private async Task<IdentityResult> CreateClientUserAsync(IdentityUser user)
+        {
+            var cancellationToken = HttpContext.RequestAborted;
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+            var result = await _userManager.CreateAsync(user, Input.Password);
+            if (!result.Succeeded)
+                return result;
+
+            result = await _userManager.AddToRoleAsync(user, "Client");
+            if (result.Succeeded)
+                await transaction.CommitAsync(cancellationToken);
+
+            return result;
         }
 
         private IdentityUser CreateUser()

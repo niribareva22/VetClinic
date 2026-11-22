@@ -8,5 +8,8 @@
     <dt class="col-sm-3">@Html.DisplayNameFor(m => m.Email)</dt><dd class="col-sm-9">@Model.Email</dd>
     <dt class="col-sm-3">@Html.DisplayNameFor(m => m.Phone)</dt><dd class="col-sm-9">@Model.Phone</dd>
 </dl>
-<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+@if (User.IsInRole("Admin"))
+{
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+}
 <a asp-action="Index" class="btn btn-secondary">Back to list</a>

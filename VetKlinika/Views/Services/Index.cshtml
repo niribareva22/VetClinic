@@ -18,7 +18,7 @@
     <thead>
     <tr>
         <th><a asp-action="Index" asp-route-searchString="@ViewData["SearchString"]" asp-route-sortOrder="@ViewData["NameSort"]">Service</a></th>
-        <th><a asp-action="Index" asp-route-searchString="@ViewData["SearchString"]" asp-route-sortOrder="@ViewData["PriceSort"]">Price</a></th>
+        <th><a asp-action="Index" asp-route-searchString="@ViewData["SearchString"]" asp-route-sortOrder="@ViewData["PriceSort"]">Price (EUR)</a></th>
         <th>Actions</th>
     </tr>
     </thead>
@@ -26,7 +26,7 @@
     @foreach (var item in Model) {
         <tr>
             <td>@Html.DisplayFor(modelItem => item.ServiceName)</td>
-            <td>@Html.DisplayFor(modelItem => item.Price)</td>
+            <td>€@item.Price.ToString("N2")</td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
                 <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>

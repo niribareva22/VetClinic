@@ -3,7 +3,7 @@
     ViewData["Title"] = "Delete appointment";
 }
 <h1>Delete appointment</h1>
-<p>Delete the appointment for @Model.Patient?.Name on @Model.AppointmentDateTime?</p>
+<p>Delete the appointment for @Model.Patient?.Name on @Model.AppointmentDateTime.ToLocalTime().ToString("g")?</p>
 <form asp-action="Delete">
     <input type="hidden" asp-for="Id" />
     <button type="submit" class="btn btn-danger">Delete</button>

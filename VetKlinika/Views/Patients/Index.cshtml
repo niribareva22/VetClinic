@@ -19,9 +19,12 @@
     <div class="col-auto"><button type="submit" class="btn btn-outline-primary">Search</button></div>
 </form>
 
-<p>
-    <a asp-action="Create" class="btn btn-primary">Create New Patient</a>
-</p>
+@if (User.IsInRole("Admin") || User.IsInRole("Vet"))
+{
+    <p>
+        <a asp-action="Create" class="btn btn-primary">Create New Patient</a>
+    </p>
+}
 <table class="table table-striped">
     <thead>
     <tr>
@@ -40,9 +43,15 @@
             <td>@Html.DisplayFor(modelItem => item.Age)</td>
             <td>@item.Client?.FirstName @item.Client?.LastName</td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
+                @if (User.IsInRole("Admin") || User.IsInRole("Vet"))
+                {
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
+                }
                 <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
-                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
+                }
             </td>
         </tr>
     }

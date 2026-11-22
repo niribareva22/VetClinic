@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using VetKlinika.Data;
+using VetKlinika.Infrastructure;
+using VetKlinika.Reporting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +20,11 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<RequestExceptionHandler>();
+builder.Services.AddScoped<ServiceCatalog>();
+builder.Services.AddScoped<IAppointmentReportRepository, AppointmentReportRepository>();
+builder.Services.AddScoped<AppointmentReportService>();
 
 var app = builder.Build();
 
@@ -79,18 +86,25 @@ using (var scope = app.Services.CreateScope())
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
+app.UseExceptionHandler("/Home/Error");
+app.UseWhen(context => context.Request.Path.StartsWithSegments("/api"),
+    branch => branch.UseStatusCodePages());
+app.UseWhen(context => !context.Request.Path.StartsWithSegments("/api"),
+    branch => branch.UseStatusCodePagesWithReExecute("/Home/Status", "?code={0}"));
+
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseWhen(context => !context.Request.Path.StartsWithSegments("/uploads"),
+    branch => branch.UseStaticFiles());
 
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapControllers();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

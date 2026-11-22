@@ -5,7 +5,7 @@
 <h1>Service details</h1>
 <dl class="row">
     <dt class="col-sm-3">@Html.DisplayNameFor(m => m.ServiceName)</dt><dd class="col-sm-9">@Model.ServiceName</dd>
-    <dt class="col-sm-3">@Html.DisplayNameFor(m => m.Price)</dt><dd class="col-sm-9">@Model.Price.ToString("C")</dd>
+    <dt class="col-sm-3">@Html.DisplayNameFor(m => m.Price)</dt><dd class="col-sm-9">€@Model.Price.ToString("N2")</dd>
     <dt class="col-sm-3">@Html.DisplayNameFor(m => m.Description)</dt><dd class="col-sm-9">@Model.Description</dd>
 </dl>
 <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>

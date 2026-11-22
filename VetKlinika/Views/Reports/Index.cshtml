@@ -1,0 +1,51 @@
+@using System.Globalization
+@model VetKlinika.Reporting.AppointmentReport
+@{
+    ViewData["Title"] = "Reports";
+    var monthlyMax = Math.Max(1, Model.Months.Max(month => month.Count));
+    var popularServices = Model.Services.Take(10).ToList();
+    var serviceMax = popularServices.FirstOrDefault()?.Count ?? 1;
+}
+
+<h1>Appointment reports</h1>
+<form method="get" asp-action="Index" class="row g-2 align-items-end mb-4">
+    <div class="col-auto">
+        <label for="year" class="form-label">Year</label>
+        <input id="year" name="year" type="number" min="1" max="9998" value="@Model.Year" class="form-control" required />
+    </div>
+    <div class="col-auto"><button type="submit" class="btn btn-primary">Show report</button></div>
+    <div class="col-auto"><a asp-action="Export" asp-route-year="@Model.Year" class="btn btn-outline-success">Export to Excel</a></div>
+</form>
+
+<p><strong>Total bookings</strong> @Model.TotalBookings</p>
+<p class="text-muted">Reports count all appointment statuses and group appointment dates by UTC month.</p>
+
+<div class="row g-4">
+    <section class="col-md-6">
+        <h2 class="h4">Bookings by month</h2>
+        @foreach (var month in Model.Months)
+        {
+            var name = CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(month.Month);
+            <div class="mb-2">
+                <span>@name</span>
+                <span class="float-end">@month.Count</span>
+                <progress value="@month.Count" max="@monthlyMax" class="d-block w-100" aria-label="@name bookings"></progress>
+            </div>
+        }
+    </section>
+    <section class="col-md-6">
+        <h2 class="h4">Most booked services</h2>
+        @if (popularServices.Count == 0)
+        {
+            <p>No service bookings for this year.</p>
+        }
+        @foreach (var service in popularServices)
+        {
+            <div class="mb-2">
+                <span>@service.Name</span>
+                <span class="float-end">@service.Count</span>
+                <progress value="@service.Count" max="@serviceMax" class="d-block w-100" aria-label="@service.Name bookings"></progress>
+            </div>
+        }
+    </section>
+</div>

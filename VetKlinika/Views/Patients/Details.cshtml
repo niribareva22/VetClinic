@@ -5,7 +5,7 @@
 <h1>Patient details</h1>
 @if (!string.IsNullOrEmpty(Model.PhotoPath))
 {
-    <img src="@Model.PhotoPath" alt="Photo of @Model.Name" class="img-thumbnail mb-3" style="max-width: 240px;" />
+    <img src="@Url.Action("Photo", new { id = Model.Id })" alt="Photo of @Model.Name" class="img-thumbnail mb-3" style="max-width: 240px;" />
 }
 <dl class="row">
     <dt class="col-sm-3">@Html.DisplayNameFor(m => m.Name)</dt><dd class="col-sm-9">@Model.Name</dd>
@@ -14,5 +14,8 @@
     <dt class="col-sm-3">@Html.DisplayNameFor(m => m.Age)</dt><dd class="col-sm-9">@Model.Age</dd>
     <dt class="col-sm-3">Owner</dt><dd class="col-sm-9">@Model.Client?.FirstName @Model.Client?.LastName</dd>
 </dl>
-<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+@if (User.IsInRole("Admin") || User.IsInRole("Vet"))
+{
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+}
 <a asp-action="Index" class="btn btn-secondary">Back to list</a>

@@ -10,6 +10,13 @@
     <div class="mb-3"><label asp-for="LastName" class="form-label"></label><input asp-for="LastName" class="form-control" /><span asp-validation-for="LastName" class="text-danger"></span></div>
     <div class="mb-3"><label asp-for="Email" class="form-label"></label><input asp-for="Email" class="form-control" /><span asp-validation-for="Email" class="text-danger"></span></div>
     <div class="mb-3"><label asp-for="Phone" class="form-label"></label><input asp-for="Phone" class="form-control" /><span asp-validation-for="Phone" class="text-danger"></span></div>
+    <div class="mb-3">
+        <label asp-for="IdentityUserId" class="form-label"></label>
+        <select asp-for="IdentityUserId" asp-items="ViewBag.IdentityUserId" class="form-select">
+            <option value="">No linked account</option>
+        </select>
+        <span asp-validation-for="IdentityUserId" class="text-danger"></span>
+    </div>
     <button type="submit" class="btn btn-primary">Save</button>
     <a asp-action="Index" class="btn btn-secondary">Cancel</a>
 </form>

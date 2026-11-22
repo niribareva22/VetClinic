@@ -2,10 +2,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.StaticFiles;
 using VetKlinika.Data;
 using VetKlinika.Models;
 
 [Authorize]
+[ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public class PatientsController : Controller
 {
     private const long MaxPhotoSize = 5 * 1024 * 1024;
@@ -21,7 +23,8 @@ public class PatientsController : Controller
     public async Task<IActionResult> Index(string? searchString, string? speciesFilter, string? sortOrder, int pageNumber = 1)
     {
         const int pageSize = 10;
-        var patients = _context.Patients.Include(p => p.Client).AsQueryable();
+        var visiblePatients = _context.VisiblePatients(User);
+        var patients = visiblePatients.Include(p => p.Client).AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(searchString))
         {
@@ -57,7 +60,7 @@ public class PatientsController : Controller
         ViewData["PageNumber"] = pageNumber;
         ViewData["TotalPages"] = totalPages;
         ViewData["SpeciesList"] = new SelectList(
-            await _context.Patients.Select(p => p.Species).Distinct().OrderBy(s => s).ToListAsync(),
+            await visiblePatients.Select(p => p.Species).Distinct().OrderBy(s => s).ToListAsync(),
             speciesFilter);
 
         return View(await patients.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync());
@@ -66,8 +69,28 @@ public class PatientsController : Controller
     public async Task<IActionResult> Details(int? id)
     {
         if (id == null) return NotFound();
-        var patient = await _context.Patients.Include(p => p.Client).FirstOrDefaultAsync(p => p.Id == id);
+        var patient = await _context.VisiblePatients(User).Include(p => p.Client).FirstOrDefaultAsync(p => p.Id == id);
         return patient == null ? NotFound() : View(patient);
+    }
+
+    public async Task<IActionResult> Photo(int id)
+    {
+        var photoPath = await _context.VisiblePatients(User)
+            .Where(patient => patient.Id == id)
+            .Select(patient => patient.PhotoPath)
+            .FirstOrDefaultAsync();
+        if (string.IsNullOrEmpty(photoPath)) return NotFound();
+
+        var fileName = Path.GetFileName(photoPath);
+        if (!new FileExtensionContentTypeProvider().TryGetContentType(fileName, out var contentType) ||
+            contentType is not ("image/jpeg" or "image/png" or "image/gif" or "image/webp"))
+            return NotFound();
+
+        var root = photoPath.StartsWith("/uploads/", StringComparison.Ordinal)
+            ? _webHostEnvironment.WebRootPath
+            : _webHostEnvironment.ContentRootPath;
+        var filePath = Path.Combine(root, "uploads", fileName);
+        return System.IO.File.Exists(filePath) ? PhysicalFile(filePath, contentType) : NotFound();
     }
 
     [Authorize(Roles = "Admin,Vet")]
@@ -90,6 +113,7 @@ public class PatientsController : Controller
 
         if (ModelState.IsValid)
         {
+            patient.PhotoPath = null;
             await SavePhotoAsync(patient);
             _context.Patients.Add(patient);
             await _context.SaveChangesAsync();
@@ -230,7 +254,7 @@ public class PatientsController : Controller
         if (photo == null || photo.Length == 0) return;
 
         var extension = Path.GetExtension(photo.FileName).ToLowerInvariant();
-        var uploadsPath = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
+        var uploadsPath = Path.Combine(_webHostEnvironment.ContentRootPath, "uploads");
         Directory.CreateDirectory(uploadsPath);
         var fileName = $"{Guid.NewGuid():N}{extension}";
         var filePath = Path.Combine(uploadsPath, fileName);
@@ -240,7 +264,7 @@ public class PatientsController : Controller
             await input.CopyToAsync(output);
         }
 
-        patient.PhotoPath = $"/uploads/{fileName}";
+        patient.PhotoPath = fileName;
     }
 
     private static bool HasValidImageSignature(byte[] header, int bytesRead, string extension) =>

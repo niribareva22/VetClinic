@@ -25,6 +25,9 @@ namespace VetKlinika.Models
         [Phone]
         public string Phone { get; set; } = string.Empty;
 
+        [Display(Name = "Login account")]
+        public string? IdentityUserId { get; set; }
+
         public virtual ICollection<Patient> Patients { get; set; } = new List<Patient>();
     }
 }

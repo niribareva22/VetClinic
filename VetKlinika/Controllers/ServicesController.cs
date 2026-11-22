@@ -8,10 +8,12 @@ using VetKlinika.Models;
 public class ServicesController : Controller
 {
     private readonly ApplicationDbContext _context;
+    private readonly ServiceCatalog _catalog;
 
-    public ServicesController(ApplicationDbContext context)
+    public ServicesController(ApplicationDbContext context, ServiceCatalog catalog)
     {
         _context = context;
+        _catalog = catalog;
     }
 
     public async Task<IActionResult> Index(string? searchString, string? sortOrder)
@@ -20,29 +22,13 @@ public class ServicesController : Controller
         ViewData["PriceSort"] = sortOrder == "price_asc" ? "price_desc" : "price_asc";
         ViewData["NameSort"] = sortOrder == "name_asc" ? "name_desc" : "name_asc";
 
-        var services = _context.Services.AsQueryable();
-        if (!string.IsNullOrWhiteSpace(searchString))
-        {
-            var keyword = searchString.Trim();
-            services = services.Where(s => s.ServiceName.Contains(keyword) ||
-                                           (s.Description != null && s.Description.Contains(keyword)));
-        }
-
-        services = sortOrder switch
-        {
-            "price_asc" => services.OrderBy(s => s.Price),
-            "price_desc" => services.OrderByDescending(s => s.Price),
-            "name_asc" => services.OrderBy(s => s.ServiceName),
-            "name_desc" => services.OrderByDescending(s => s.ServiceName),
-            _ => services.OrderBy(s => s.ServiceName)
-        };
-        return View(await services.ToListAsync());
+        return View(await _catalog.ListAsync(searchString, sortOrder, HttpContext.RequestAborted));
     }
 
     public async Task<IActionResult> Details(int? id)
     {
         if (id == null) return NotFound();
-        var service = await _context.Services.FirstOrDefaultAsync(m => m.Id == id);
+        var service = await _catalog.FindAsync(id.Value, HttpContext.RequestAborted);
         if (service == null) return NotFound();
         return View(service);
     }
@@ -96,7 +82,7 @@ public class ServicesController : Controller
     public async Task<IActionResult> Delete(int? id)
     {
         if (id == null) return NotFound();
-        var service = await _context.Services.FirstOrDefaultAsync(m => m.Id == id);
+        var service = await _catalog.FindAsync(id.Value, HttpContext.RequestAborted);
         if (service == null) return NotFound();
         return View(service);
     }

@@ -6,9 +6,12 @@
 
 <h1>Appointments</h1>
 
-<p>
-    <a asp-action="Create" class="btn btn-primary">Schedule New Appointment</a>
-</p>
+@if (User.IsInRole("Admin") || User.IsInRole("Vet"))
+{
+    <p>
+        <a asp-action="Create" class="btn btn-primary">Schedule New Appointment</a>
+    </p>
+}
 <table class="table table-striped">
     <thead>
     <tr>
@@ -23,15 +26,21 @@
     <tbody>
     @foreach (var item in Model) {
         <tr>
-            <td>@Html.DisplayFor(modelItem => item.AppointmentDateTime)</td>
+            <td>@item.AppointmentDateTime.ToLocalTime().ToString("g")</td>
             <td>@item.Patient?.Name</td>
             <td>@item.Vet?.FirstName @item.Vet?.LastName</td>
             <td>@item.Service?.ServiceName</td>
             <td>@Html.DisplayFor(modelItem => item.Status)</td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
+                @if (User.IsInRole("Admin") || User.IsInRole("Vet"))
+                {
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
+                }
                 <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
-                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
+                }
             </td>
         </tr>
     }

@@ -6,6 +6,7 @@ using VetKlinika.Data;
 using VetKlinika.Models;
 
 [Authorize]
+[ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public class AppointmentsController : Controller
 {
     private readonly ApplicationDbContext _context;
@@ -19,7 +20,7 @@ public class AppointmentsController : Controller
     {
         ViewData["SortOrder"] = sortOrder;
         ViewData["NextDateSort"] = sortOrder == "date" ? "date_desc" : "date";
-        IQueryable<Appointment> appointments = _context.Appointments
+        IQueryable<Appointment> appointments = _context.VisibleAppointments(User)
             .Include(a => a.Client)
             .Include(a => a.Patient)
             .Include(a => a.Service)
@@ -33,7 +34,7 @@ public class AppointmentsController : Controller
     public async Task<IActionResult> Details(int? id)
     {
         if (id == null) return NotFound();
-        var appointment = await _context.Appointments
+        var appointment = await _context.VisibleAppointments(User)
             .Include(a => a.Client)
             .Include(a => a.Patient)
             .Include(a => a.Service)
@@ -68,8 +69,10 @@ public class AppointmentsController : Controller
         if (!await _context.Services.AnyAsync(s => s.Id == appointment.ServiceId))
             ModelState.AddModelError(nameof(appointment.ServiceId), "Select a valid service.");
 
+        ValidateAppointmentDateTime(appointment.AppointmentDateTime);
         if (ModelState.IsValid)
         {
+            appointment.AppointmentDateTime = appointment.AppointmentDateTime.ToUniversalTime();
             _context.Appointments.Add(appointment);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
@@ -83,8 +86,9 @@ public class AppointmentsController : Controller
     public async Task<IActionResult> Edit(int? id)
     {
         if (id == null) return NotFound();
-        var appointment = await _context.Appointments.FindAsync(id);
+        var appointment = await _context.Appointments.AsNoTracking().FirstOrDefaultAsync(a => a.Id == id);
         if (appointment == null) return NotFound();
+        appointment.AppointmentDateTime = appointment.AppointmentDateTime.ToLocalTime();
         PopulateSelections(appointment);
         return View(appointment);
     }
@@ -106,13 +110,14 @@ public class AppointmentsController : Controller
         if (!await _context.Services.AnyAsync(s => s.Id == appointment.ServiceId))
             ModelState.AddModelError(nameof(appointment.ServiceId), "Select a valid service.");
 
+        ValidateAppointmentDateTime(appointment.AppointmentDateTime);
         if (ModelState.IsValid && patient != null)
         {
             existingAppointment.PatientId = patient.Id;
             existingAppointment.ClientId = patient.ClientId;
             existingAppointment.VetId = appointment.VetId;
             existingAppointment.ServiceId = appointment.ServiceId;
-            existingAppointment.AppointmentDateTime = appointment.AppointmentDateTime;
+            existingAppointment.AppointmentDateTime = appointment.AppointmentDateTime.ToUniversalTime();
             existingAppointment.Status = appointment.Status;
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
@@ -145,6 +150,12 @@ public class AppointmentsController : Controller
         _context.Appointments.Remove(appointment);
         await _context.SaveChangesAsync();
         return RedirectToAction(nameof(Index));
+    }
+
+    private void ValidateAppointmentDateTime(DateTime dateTime)
+    {
+        if (dateTime == default || TimeZoneInfo.Local.IsInvalidTime(dateTime))
+            ModelState.AddModelError(nameof(Appointment.AppointmentDateTime), "Enter a valid appointment date and time.");
     }
 
     private void PopulateSelections(Appointment? appointment = null)

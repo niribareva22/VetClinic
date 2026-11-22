@@ -12,7 +12,7 @@ namespace VetKlinika.Models
         public string ServiceName { get; set; } = string.Empty;
 
         [Range(0.01, 10000.00)]
-        [DataType(DataType.Currency)]
+        [Display(Name = "Price (EUR)")]
         public decimal Price { get; set; }
 
         [StringLength(500)]

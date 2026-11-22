@@ -281,6 +281,9 @@ namespace VetKlinika.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<string>("IdentityUserId")
+                        .HasColumnType("text");
+
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -292,6 +295,9 @@ namespace VetKlinika.Migrations
                         .HasColumnType("character varying(30)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("IdentityUserId")
+                        .IsUnique();
 
                     b.ToTable("Clients");
                 });
@@ -491,6 +497,11 @@ namespace VetKlinika.Migrations
 
             modelBuilder.Entity("VetKlinika.Models.Client", b =>
                 {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithOne()
+                        .HasForeignKey("VetKlinika.Models.Client", "IdentityUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Patients");
                 });
 
